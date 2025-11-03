@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <!-- Homepage -->
+  <url>
+    <loc>https://dsk-ug.de/</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://dsk-ug.de/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://dsk-ug.de/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://dsk-ug.de/?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="ro" href="https://dsk-ug.de/?lang=ro" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://dsk-ug.de/?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://dsk-ug.de/?lang=uk" />
+  </url>
+  
+  <!-- Accommodations -->
+  <url>
+    <loc>https://dsk-ug.de/unterkuenfte</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://dsk-ug.de/unterkuenfte" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://dsk-ug.de/unterkuenfte?lang=en" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://dsk-ug.de/unterkuenfte?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="ro" href="https://dsk-ug.de/unterkuenfte?lang=ro" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://dsk-ug.de/unterkuenfte?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://dsk-ug.de/unterkuenfte?lang=uk" />
+  </url>
+  
+  <!-- Booking -->
+  <url>
+    <loc>https://dsk-ug.de/buchung</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://dsk-ug.de/buchung" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://dsk-ug.de/buchung?lang=en" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://dsk-ug.de/buchung?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="ro" href="https://dsk-ug.de/buchung?lang=ro" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://dsk-ug.de/buchung?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://dsk-ug.de/buchung?lang=uk" />
+  </url>
+  
+  <!-- Contact -->
+  <url>
+    <loc>https://dsk-ug.de/kontakt</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://dsk-ug.de/kontakt" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://dsk-ug.de/kontakt?lang=en" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://dsk-ug.de/kontakt?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="ro" href="https://dsk-ug.de/kontakt?lang=ro" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://dsk-ug.de/kontakt?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://dsk-ug.de/kontakt?lang=uk" />
+  </url>
+  
+  <!-- About -->
+  <url>
+    <loc>https://dsk-ug.de/ueber-uns</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://dsk-ug.de/ueber-uns" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://dsk-ug.de/ueber-uns?lang=en" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://dsk-ug.de/ueber-uns?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="ro" href="https://dsk-ug.de/ueber-uns?lang=ro" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://dsk-ug.de/ueber-uns?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://dsk-ug.de/ueber-uns?lang=uk" />
+  </url>
+  
+  <!-- FAQ -->
+  <url>
+    <loc>https://dsk-ug.de/faq</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://dsk-ug.de/faq" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://dsk-ug.de/faq?lang=en" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://dsk-ug.de/faq?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="ro" href="https://dsk-ug.de/faq?lang=ro" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://dsk-ug.de/faq?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://dsk-ug.de/faq?lang=uk" />
+  </url>
+  
+  <!-- Impressum -->
+  <url>
+    <loc>https://dsk-ug.de/impressum</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://dsk-ug.de/impressum" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://dsk-ug.de/impressum?lang=en" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://dsk-ug.de/impressum?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="ro" href="https://dsk-ug.de/impressum?lang=ro" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://dsk-ug.de/impressum?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://dsk-ug.de/impressum?lang=uk" />
+  </url>
+  
+  <!-- Datenschutz -->
+  <url>
+    <loc>https://dsk-ug.de/datenschutz</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://dsk-ug.de/datenschutz" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://dsk-ug.de/datenschutz?lang=en" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://dsk-ug.de/datenschutz?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="ro" href="https://dsk-ug.de/datenschutz?lang=ro" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://dsk-ug.de/datenschutz?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://dsk-ug.de/datenschutz?lang=uk" />
+  </url>
+  
+  <!-- AGB -->
+  <url>
+    <loc>https://dsk-ug.de/agb</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="de" href="https://dsk-ug.de/agb" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://dsk-ug.de/agb?lang=en" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://dsk-ug.de/agb?lang=pl" />
+    <xhtml:link rel="alternate" hreflang="ro" href="https://dsk-ug.de/agb?lang=ro" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://dsk-ug.de/agb?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="uk" href="https://dsk-ug.de/agb?lang=uk" />
+  </url>
+  
+</urlset>
