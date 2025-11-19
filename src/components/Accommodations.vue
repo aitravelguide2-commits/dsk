@@ -1,48 +1,66 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+  <div class="min-h-screen bg-slate-50">
     <!-- Hero Section -->
-    <section class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
-      <div class="container mx-auto px-4 text-center">
-        <h1 class="text-4xl md:text-5xl font-bold mb-6">
+    <section class="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-20 overflow-hidden">
+      <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-sky-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
+        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
+      </div>
+      <div class="container mx-auto px-4 text-center relative z-10">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-sky-100 to-indigo-100">
           {{ $t('accommodations.title') }}
         </h1>
-        <p class="text-xl text-blue-100 max-w-2xl mx-auto">
+        <p class="text-xl text-slate-300 max-w-2xl mx-auto">
           Entdecken Sie unsere modernen und komfortablen Unterkünfte für Monteure und Bauarbeiter in Leipzig
         </p>
       </div>
     </section>
 
-    <div class="container mx-auto px-4 py-12">
-      <!-- Advanced Filters -->
-      <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-6 mb-8 sticky top-24 z-40">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+    <div class="container mx-auto px-4 py-8">
+      <!-- Advanced Filters - Compact Version -->
+      <div class="bg-white rounded-xl shadow-md p-4 mb-6 border border-slate-100">
+        <!-- Mobile Filter Toggle -->
+        <div class="flex items-center justify-between mb-3 md:hidden">
+          <span class="text-sm font-semibold text-slate-700">Filter</span>
+          <button 
+            @click="filterCollapsed = !filterCollapsed"
+            class="text-sky-600 text-xs font-semibold px-2 py-1 rounded-lg border border-sky-200 bg-sky-50"
+          >
+            {{ filterCollapsed ? 'Anzeigen' : 'Ausblenden' }}
+          </button>
+        </div>
+
+        <div 
+          class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end"
+          :class="{ 'hidden': isMobile && filterCollapsed }"
+        >
           <!-- Persons Filter -->
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">
               {{ $t('accommodations.filter.persons') }}
             </label>
             <select 
               v-model="filters.persons" 
-              class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
             >
-              <option value="">Alle</option>
-              <option value="1">1 Person</option>
-              <option value="2">2 Personen</option>
-              <option value="3">3 Personen</option>
-              <option value="4">4+ Personen</option>
+              <option value="">{{ $t('accommodations.filter.all') }}</option>
+              <option value="1">{{ $t('accommodations.filter.person1') }}</option>
+              <option value="2">{{ $t('accommodations.filter.person2') }}</option>
+              <option value="3">{{ $t('accommodations.filter.person3') }}</option>
+              <option value="4">{{ $t('accommodations.filter.person4plus') }}</option>
             </select>
           </div>
 
           <!-- Location Filter -->
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">
-              Standort
+            <label class="block text-xs font-semibold text-slate-600 mb-1">
+              {{ $t('accommodations.filter.location') }}
             </label>
             <select 
               v-model="filters.location" 
-              class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
             >
-              <option value="">Alle Standorte</option>
+              <option value="">{{ $t('accommodations.filter.allLocations') }}</option>
               <option value="Zentrum">Zentrum</option>
               <option value="Nord">Nord</option>
               <option value="Süd">Süd</option>
@@ -52,8 +70,8 @@
           </div>
 
           <!-- Price Range -->
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">
+          <div class="md:col-span-2">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">
               {{ $t('accommodations.filter.price') }}
             </label>
             <div class="flex space-x-2">
@@ -61,13 +79,13 @@
                 v-model="filters.minPrice" 
                 type="number" 
                 placeholder="Min €"
-                class="w-full border border-gray-200 rounded-xl px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
               >
               <input 
                 v-model="filters.maxPrice" 
                 type="number" 
                 placeholder="Max €"
-                class="w-full border border-gray-200 rounded-xl px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
               >
             </div>
           </div>
@@ -76,22 +94,22 @@
           <div class="flex space-x-2">
             <button 
               @click="resetFilters"
-              class="flex-1 border border-gray-300 text-gray-700 px-4 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200"
+              class="flex-1 border border-slate-300 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-all"
             >
-              {{ $t('accommodations.filter.reset') }}
+              Zurücksetzen
             </button>
             <button 
               @click="applyFilters"
-              class="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl"
+              class="flex-1 bg-gradient-to-r from-sky-500 to-indigo-500 text-white px-3 py-2 rounded-lg text-sm font-medium hover:from-sky-400 hover:to-indigo-400 transition-all shadow-sm hover:shadow-md"
             >
-              {{ $t('accommodations.filter.apply') }}
+              Anwenden
             </button>
           </div>
         </div>
 
-        <!-- Results Count -->
-        <div class="mt-4 text-sm text-gray-600">
-          {{ filteredAccommodations.length }} {{ filteredAccommodations.length === 1 ? 'Unterkunft' : 'Unterkünfte' }} gefunden
+        <!-- Results Count - Compact -->
+        <div class="mt-3 text-xs text-slate-500 text-center md:text-left">
+          {{ filteredAccommodations.length }} {{ filteredAccommodations.length === 1 ? $t('accommodations.results.singular') : $t('accommodations.results.plural') }} {{ $t('accommodations.results.found') }}
         </div>
       </div>
 
@@ -105,18 +123,22 @@
           <!-- Image -->
           <div class="relative overflow-hidden">
             <img 
+              v-if="accommodation.image"
               :src="accommodation.image" 
               :alt="accommodation.name"
               class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
             >
+            <div v-else class="w-full h-64 bg-gray-100 flex items-center justify-center text-gray-500">
+              {{ $t('common.notFound') }}
+            </div>
             <div class="absolute top-4 left-4">
-              <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+              <span class="bg-gradient-to-r from-sky-500 to-indigo-500 text-white px-3 py-1 rounded-full text-sm font-semibold shadow-md">
                 {{ accommodation.location }}
               </span>
             </div>
             <div class="absolute top-4 right-4">
-              <span class="bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-full text-sm font-bold">
-                €{{ accommodation.price }}/Nacht
+              <span class="bg-white/95 backdrop-blur-sm text-slate-800 px-3 py-1.5 rounded-full text-sm font-bold shadow-md">
+                €{{ accommodation.price }}/{{ $t('accommodations.perNight') }}
               </span>
             </div>
           </div>
@@ -132,10 +154,10 @@
 
             <!-- Capacity -->
             <div class="flex items-center mb-4">
-              <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-sky-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
               </svg>
-              <span class="text-gray-700 font-medium">Bis zu {{ accommodation.capacity }} Personen</span>
+              <span class="text-slate-700 font-medium">{{ $t('accommodations.card.capacityUpTo', { count: accommodation.capacity }) }}</span>
             </div>
 
             <!-- Features -->
@@ -143,7 +165,7 @@
               <span 
                 v-for="feature in accommodation.features" 
                 :key="feature"
-                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200"
+                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-200"
               >
                 <span class="mr-1">{{ getFeatureIcon(feature) }}</span>
                 {{ $t(`accommodations.features.${feature}`) }}
@@ -152,17 +174,18 @@
 
             <!-- Location Address -->
             <div class="mb-6">
-              <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+              <h4 class="text-sm font-semibold text-gray-700 mb-1 flex items-center">
                 <svg class="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
-                {{ accommodation.location }}
+                {{ accommodation.address }}
               </h4>
+              <p class="text-xs text-gray-500 mb-2">{{ accommodation.location }}</p>
               <InteractiveMap
                 :center="getAccommodationLocation(accommodation)"
                 :zoom="14"
-                :height="150"
+                :height="'150px'"
                 :markers="[getAccommodationMarker(accommodation)]"
               />
             </div>
@@ -171,7 +194,7 @@
             <div class="flex space-x-3">
               <button 
                 @click="viewDetails(accommodation)"
-                class="flex-1 border-2 border-blue-600 text-blue-600 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-all duration-200 flex items-center justify-center"
+                class="flex-1 border-2 border-sky-600 text-sky-600 py-3 rounded-full font-semibold hover:bg-sky-50 transition-all duration-200 flex items-center justify-center"
               >
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -180,8 +203,8 @@
                 {{ $t('accommodations.details') }}
               </button>
               <button 
-                @click="$router.push(`/buchung/${accommodation.id}`)"
-                class="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center"
+                @click="$router.push({ path: '/buchung', query: { accommodationId: accommodation.id } })"
+                class="flex-1 bg-gradient-to-r from-sky-500 to-indigo-500 text-white py-3 rounded-full font-semibold hover:from-sky-400 hover:to-indigo-400 transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center"
               >
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -199,40 +222,46 @@
           <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.29-1.009-5.824-2.562M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
           </svg>
-          <h3 class="text-xl font-semibold text-gray-800 mb-2">Keine Unterkünfte gefunden</h3>
-          <p class="text-gray-600 mb-4">Versuchen Sie andere Filtereinstellungen oder kontaktieren Sie uns direkt.</p>
+          <h3 class="text-xl font-semibold text-gray-800 mb-2">{{ $t('accommodations.noResults.title') }}</h3>
+          <p class="text-gray-600 mb-4">{{ $t('accommodations.noResults.description') }}</p>
           <button 
             @click="resetFilters"
             class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
           >
-            Filter zurücksetzen
+            {{ $t('accommodations.filter.reset') }}
           </button>
         </div>
       </div>
 
       <!-- Call to Action -->
-      <div class="mt-16 bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-center text-white">
-        <h2 class="text-2xl font-bold mb-4">Haben Sie Fragen zu unseren Unterkünften?</h2>
-        <p class="text-blue-100 mb-6">Unser Team berät Sie gerne persönlich und findet die perfekte Lösung für Ihr Team.</p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <router-link 
-            to="/kontakt"
-            class="bg-white text-blue-600 px-8 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-all duration-200 inline-flex items-center justify-center"
-          >
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-            </svg>
-            Kontakt aufnehmen
-          </router-link>
-          <a 
-            href="tel:+4915171421923"
-            class="border-2 border-white text-white px-8 py-3 rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition-all duration-200 inline-flex items-center justify-center"
-          >
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-            </svg>
-            +49 151 71421923
-          </a>
+      <div class="mt-16 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-8 text-center text-white relative overflow-hidden">
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+          <div class="absolute -top-20 -right-20 w-64 h-64 bg-sky-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10"></div>
+          <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10"></div>
+        </div>
+        <div class="relative z-10">
+          <h2 class="text-2xl font-bold mb-4">{{ $t('accommodations.cta.title') }}</h2>
+          <p class="text-slate-300 mb-6">{{ $t('accommodations.cta.description') }}</p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <router-link 
+              to="/kontakt"
+              class="bg-white text-slate-900 px-8 py-3 rounded-full font-semibold hover:bg-slate-100 transition-all duration-200 inline-flex items-center justify-center shadow-md"
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+              </svg>
+              {{ $t('accommodations.cta.contactButton') }}
+            </router-link>
+            <a 
+              href="tel:+4915171421923"
+              class="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-slate-900 transition-all duration-200 inline-flex items-center justify-center"
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+              </svg>
+              +49 151 71421923
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -243,6 +272,7 @@
 import { useSEO, seoData } from '../composables/useSEO.js'
 import { useI18n } from 'vue-i18n'
 import InteractiveMap from './InteractiveMap.vue'
+import { accommodationService } from '../services/api.js'
 
 export default {
   name: 'Accommodations',
@@ -260,6 +290,10 @@ export default {
   },
   mounted() {
     this.updateSEO()
+    this.isMobile = window.innerWidth < 768
+    window.addEventListener('resize', this.handleResize)
+    window.addEventListener('scroll', this.handleScroll)
+    this.loadAccommodations()
   },
   watch: {
     locale() {
@@ -268,114 +302,15 @@ export default {
   },
   data() {
     return {
+      isMobile: false,
+      filterCollapsed: false,
       filters: {
         persons: '',
         location: '',
         minPrice: '',
         maxPrice: ''
       },
-      accommodations: [
-        {
-          id: 1,
-          name: 'Moderne Monteurwohnung Zentrum',
-          description: 'Helle und moderne 2-Zimmer-Wohnung im Herzen von Leipzig mit voll ausgestatteter Küche und Arbeitsbereich',
-          price: 89,
-          capacity: 4,
-          location: 'Zentrum',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'tv'],
-          image: 'https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 2,
-          name: 'Komfort-Appartement West',
-          description: 'Geräumiges Appartement mit separatem Arbeitsbereich und Waschmaschine',
-          price: 75,
-          capacity: 3,
-          location: 'West',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'laundry'],
-          image: 'https://images.pexels.com/photos/271618/pexels-photo-271618.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 3,
-          name: 'Wohnheim für Bauteams',
-          description: 'Praktische Lösung für größere Montageteams mit mehreren Schlafzimmern',
-          price: 65,
-          capacity: 6,
-          location: 'Nord',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'laundry', 'tv'],
-          image: 'https://images.pexels.com/photos/271643/pexels-photo-271643.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 4,
-          name: 'Business Apartment Süd',
-          description: 'Modernes Apartment mit Bürobereich und schnellem Internet',
-          price: 95,
-          capacity: 2,
-          location: 'Süd',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'tv'],
-          image: 'https://images.pexels.com/photos/271795/pexels-photo-271795.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 5,
-          name: 'Teamunterkunft Ost',
-          description: 'Großzügige Unterkunft für Montageteams mit Gemeinschaftsküche',
-          price: 55,
-          capacity: 8,
-          location: 'Ost',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'laundry'],
-          image: 'https://images.pexels.com/photos/271616/pexels-photo-271616.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 6,
-          name: 'Premium Suite Zentrum',
-          description: 'Luxuriöse Suite mit separatem Wohn- und Schlafbereich',
-          price: 120,
-          capacity: 2,
-          location: 'Zentrum',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'tv', 'laundry'],
-          image: 'https://images.pexels.com/photos/271619/pexels-photo-271619.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 7,
-          name: 'Familienwohnung Plagwitz',
-          description: 'Geräumige 3-Zimmer-Wohnung in beliebtem Stadtteil mit Balkon und Waschmaschine',
-          price: 85,
-          capacity: 5,
-          location: 'Plagwitz',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'tv', 'laundry', 'balcony'],
-          image: 'https://images.pexels.com/photos/271639/pexels-photo-271639.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 8,
-          name: 'Studio Apartment Connewitz',
-          description: 'Modernes Studio-Apartment für Einzelpersonen mit kompakter Ausstattung',
-          price: 45,
-          capacity: 1,
-          location: 'Connewitz',
-          features: ['wifi', 'kitchen', 'bathroom', 'tv'],
-          image: 'https://images.pexels.com/photos/271647/pexels-photo-271647.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 9,
-          name: 'Monteur-WG Gohlis',
-          description: 'Wohngemeinschaft für 4 Personen mit Einzelzimmern und Gemeinschaftsküche',
-          price: 60,
-          capacity: 4,
-          location: 'Gohlis',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'laundry'],
-          image: 'https://images.pexels.com/photos/271650/pexels-photo-271650.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 10,
-          name: 'Executive Suite Reudnitz',
-          description: 'Hochwertige Suite mit separatem Arbeitsbereich und Premium-Ausstattung',
-          price: 110,
-          capacity: 2,
-          location: 'Reudnitz',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'tv', 'laundry', 'balcony'],
-          image: 'https://images.pexels.com/photos/271652/pexels-photo-271652.jpeg?auto=compress&cs=tinysrgb&w=600'
-        }
-      ]
+      accommodations: []
     }
   },
   computed: {
@@ -390,6 +325,14 @@ export default {
     }
   },
   methods: {
+    handleResize() {
+      this.isMobile = window.innerWidth < 768
+    },
+    handleScroll() {
+      if (this.isMobile) {
+        this.filterCollapsed = window.scrollY > 80
+      }
+    },
     updateSEO() {
       const currentSeoData = seoData.accommodations[this.locale] || seoData.accommodations.de
       this.setPageSEO({
@@ -411,6 +354,20 @@ export default {
     viewDetails(accommodation) {
       this.$router.push(`/unterkunft/${accommodation.id}`)
     },
+    async loadAccommodations() {
+      try {
+        const res = await accommodationService.getAll({ isActive: true })
+        
+        // Backend already provides correctly mapped data via /catalog/accommodations
+        // Fields: id, name, description, price, capacity, location, address, features, image, images
+        this.accommodations = res.data || []
+        
+        console.log('Loaded accommodations:', this.accommodations.length, this.accommodations)
+      } catch (err) {
+        console.error('Fehler beim Laden der Unterkünfte:', err)
+        this.accommodations = []
+      }
+    },
     getFeatureIcon(feature) {
       const icons = {
         wifi: '📶',
@@ -418,27 +375,35 @@ export default {
         parking: '🚗',
         bathroom: '🚿',
         tv: '📺',
-        laundry: '🧺'
+        laundry: '🧺',
+        balcony: '🛋️'
       }
       return icons[feature] || '✓'
     },
     getAccommodationLocation(accommodation) {
-      // Define locations for each accommodation based on their location property
-      const locations = {
-        'Zentrum': [51.3397, 12.3731], // Leipzig city center
-        'West': [51.3350, 12.3200],    // Leipzig west
-        'Nord': [51.3600, 12.3731],    // Leipzig north
-        'Süd': [51.3200, 12.3731],     // Leipzig south
-        'Ost': [51.3397, 12.4100]      // Leipzig east
+      // Prefer explicit coordinates when available; otherwise fallback by district
+      if (accommodation.coordinates && Array.isArray(accommodation.coordinates) && accommodation.coordinates.length === 2) {
+        return accommodation.coordinates
       }
-      return locations[accommodation.location] || [51.3397, 12.3731] // Default to center
+      const locations = {
+        'Zentrum': [51.3397, 12.3731],
+        'West': [51.3350, 12.3200],
+        'Nord': [51.3600, 12.3731],
+        'Süd': [51.3200, 12.3731],
+        'Ost': [51.3397, 12.4100],
+        'Plagwitz': [51.3315, 12.3262],
+        'Connewitz': [51.3037, 12.3737],
+        'Gohlis': [51.3620, 12.3603],
+        'Reudnitz': [51.3376, 12.4047]
+      }
+      return locations[accommodation.location] || [51.3397, 12.3731]
     },
     getAccommodationMarker(accommodation) {
       const location = this.getAccommodationLocation(accommodation)
       return {
         lat: location[0],
         lng: location[1],
-        popup: `<strong>${accommodation.name}</strong><br>€${accommodation.price}/Nacht<br>${accommodation.location}`,
+        popup: `<strong>${accommodation.name}</strong><br>${accommodation.address}<br>€${accommodation.price}/Nacht`,
         tooltip: accommodation.name
       }
     }

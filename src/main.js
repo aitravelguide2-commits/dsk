@@ -25,8 +25,15 @@ const router = createRouter({
     { path: '/faq', component: () => import('./components/FAQ.vue') },
     { path: '/impressum', component: () => import('./components/Impressum.vue') },
     { path: '/datenschutz', component: () => import('./components/Datenschutz.vue') },
-    { path: '/agb', component: () => import('./components/AGB.vue') }
-  ]
+    { path: '/agb', component: () => import('./components/AGB.vue') },
+    // Catch-all: Leite unbekannte Pfade (z. B. /dsk/) auf die Startseite um
+    { path: '/:pathMatch(.*)*', redirect: '/' }
+  ],
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition
+    // Immer zum Seitenanfang scrollen, keine automatische Navigation zum Footer
+    return { left: 0, top: 0 }
+  }
 })
 
 createApp(App).use(i18n).use(router).mount('#app')

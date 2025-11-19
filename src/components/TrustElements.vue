@@ -496,10 +496,27 @@ export default {
   .live-stats {
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
+    justify-items: center;
+  }
+  
+  .stat-item {
+    text-align: center;
   }
   
   .stat-number {
-    font-size: 2rem;
+    font-size: 2.25rem;
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: #ffffff;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+  
+  .stat-label {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 600;
+    letter-spacing: 0.3px;
   }
   
   .testimonials-title {

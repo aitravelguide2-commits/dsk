@@ -8,7 +8,7 @@
     <!-- Not Found State -->
     <div v-else-if="!accommodation" class="flex items-center justify-center min-h-screen">
       <div class="text-center">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">{{ $t('common.notFound') }}</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">{{ errorMsg || $t('common.notFound') }}</h2>
         <p class="text-gray-600 mb-6">{{ $t('accommodations.notFoundMessage') }}</p>
         <router-link to="/unterkuenfte" class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors">
           {{ $t('accommodations.backToList') }}
@@ -29,12 +29,12 @@
           <h1 class="text-3xl font-bold text-gray-900">{{ accommodation.name }}</h1>
         </div>
         
-        <div class="flex items-center space-x-4 text-sm text-gray-600">
+          <div class="flex items-center space-x-4 text-sm text-gray-600">
           <div class="flex items-center">
             <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
             </svg>
-            {{ accommodation.location }}
+            {{ $t('locations.' + computeLocationKey(accommodation.location)) }}
           </div>
           <div class="flex items-center">
             <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -49,21 +49,30 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-12 rounded-2xl overflow-hidden">
         <div class="lg:row-span-2">
           <img 
+            v-if="accommodation.image"
             :src="accommodation.image" 
             :alt="accommodation.name"
             class="w-full h-96 lg:h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
-            @click="openImageModal"
+            @click="openLightbox(0)"
           />
+          <div v-else class="w-full h-96 lg:h-full bg-gray-100 flex items-center justify-center text-gray-500">
+            {{ $t('common.notFound') }}
+          </div>
         </div>
         <div class="grid grid-cols-2 gap-4">
-          <img 
-            v-for="(image, index) in additionalImages" 
-            :key="index"
-            :src="image" 
-            :alt="`${accommodation.name} ${index + 1}`"
-            class="w-full h-44 object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
-            @click="openImageModal"
-          />
+          <template v-if="additionalImages.length">
+            <img 
+              v-for="(image, index) in additionalImages" 
+              :key="index"
+              :src="image" 
+              :alt="`${accommodation.name} ${index + 1}`"
+              class="w-full h-44 object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+              @click="openLightbox(index + 1)"
+            />
+          </template>
+          <div v-else class="col-span-2 w-full h-44 bg-gray-100 flex items-center justify-center text-gray-500">
+            {{ $t('common.notFound') }}
+          </div>
         </div>
       </div>
 
@@ -76,10 +85,10 @@
             <div class="flex items-center justify-between">
               <div>
                 <h2 class="text-2xl font-semibold text-gray-900 mb-2">
-                  Monteurunterkunft in {{ accommodation.location }}
+                  {{ $t('accommodationDetail.title', { location: $t('locations.' + accommodation.location) }) }}
                 </h2>
                 <p class="text-gray-600">
-                  Gastgeber: DSK-UG Monteurunterkünfte
+                  {{ $t('accommodationDetail.hostLabel') }}: DSK-UG Monteurunterkünfte
                 </p>
               </div>
               <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
@@ -90,13 +99,13 @@
 
           <!-- Description -->
           <div class="border-b border-gray-200 pb-8">
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">Über diese Unterkunft</h3>
-            <p class="text-gray-700 leading-relaxed">{{ accommodation.description }}</p>
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">{{ $t('accommodationDetail.about') }}</h3>
+            <p class="text-gray-700 leading-relaxed">{{ accommodation.about || accommodation.description }}</p>
           </div>
 
           <!-- Features -->
           <div class="border-b border-gray-200 pb-8">
-            <h3 class="text-xl font-semibold text-gray-900 mb-6">Was diese Unterkunft bietet</h3>
+            <h3 class="text-xl font-semibold text-gray-900 mb-6">{{ $t('accommodationDetail.featuresTitle') }}</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div 
                 v-for="feature in accommodation.features" 
@@ -111,17 +120,19 @@
 
           <!-- Location -->
           <div class="border-b border-gray-200 pb-8">
-            <h3 class="text-xl font-semibold text-gray-900 mb-6">Wo Sie übernachten werden</h3>
+            <h3 class="text-xl font-semibold text-gray-900 mb-6">{{ $t('accommodationDetail.whereStay') }}</h3>
             <div class="bg-gray-50 rounded-2xl p-6">
               <div class="mb-4">
-                <h4 class="font-semibold text-gray-800 mb-2">{{ accommodation.location }}</h4>
-                <p class="text-gray-600">Zentrale Lage in Leipzig mit guter Verkehrsanbindung</p>
+                <h4 class="font-semibold text-gray-800 mb-2">{{ $t('locations.' + computeLocationKey(accommodation.location)) }}</h4>
+                <p class="text-gray-600">{{ $t('accommodationDetail.location.subtitle') }}</p>
               </div>
               <InteractiveMap
                 :center="getAccommodationLocation(accommodation)"
                 :zoom="15"
-                :height="300"
+                :height="'300px'"
                 :markers="[getAccommodationMarker(accommodation)]"
+                :showDirections="true"
+                :showSurroundingsLink="true"
               />
             </div>
           </div>
@@ -132,7 +143,7 @@
               <svg class="w-6 h-6 text-yellow-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
               </svg>
-              <h3 class="text-xl font-semibold text-gray-900">4.8 · 24 Bewertungen</h3>
+              <h3 class="text-xl font-semibold text-gray-900">4.8 · 24 {{ $t('accommodationDetail.reviews.title') }}</h3>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -143,10 +154,10 @@
                   </div>
                   <div>
                     <p class="font-semibold text-gray-900">Michael K.</p>
-                    <p class="text-sm text-gray-600">März 2024</p>
+                    <p class="text-sm text-gray-600">{{ $t('common.months.march') }} 2024</p>
                   </div>
                 </div>
-                <p class="text-gray-700">"Sehr saubere und gut ausgestattete Unterkunft. Perfekt für Monteure!"</p>
+                <p class="text-gray-700">"{{ $t('accommodationDetail.reviews.sample1') }}"</p>
               </div>
               
               <div class="bg-white border border-gray-200 rounded-xl p-6">
@@ -156,41 +167,41 @@
                   </div>
                   <div>
                     <p class="font-semibold text-gray-900">Andreas S.</p>
-                    <p class="text-sm text-gray-600">Februar 2024</p>
+                    <p class="text-sm text-gray-600">{{ $t('common.months.february') }} 2024</p>
                   </div>
                 </div>
-                <p class="text-gray-700">"Zentrale Lage, gute Ausstattung. Kann ich nur empfehlen!"</p>
+                <p class="text-gray-700">"{{ $t('accommodationDetail.reviews.sample2') }}"</p>
               </div>
             </div>
           </div>
 
           <!-- House Rules -->
           <div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-6">Hausregeln</h3>
+            <h3 class="text-xl font-semibold text-gray-900 mb-6">{{ $t('accommodationDetail.houseRules') }}</h3>
             <div class="space-y-4">
               <div class="flex items-center">
                 <svg class="w-5 h-5 text-gray-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span class="text-gray-700">Check-in: 15:00 - 22:00</span>
+                <span class="text-gray-700">{{ $t('accommodationDetail.rules.checkinRange') }}</span>
               </div>
               <div class="flex items-center">
                 <svg class="w-5 h-5 text-gray-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span class="text-gray-700">Check-out: bis 11:00</span>
+                <span class="text-gray-700">{{ $t('accommodationDetail.rules.checkoutUntil') }}</span>
               </div>
               <div class="flex items-center">
                 <svg class="w-5 h-5 text-gray-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"/>
                 </svg>
-                <span class="text-gray-700">Rauchen nicht gestattet</span>
+                <span class="text-gray-700">{{ $t('accommodationDetail.rules.noSmoking') }}</span>
               </div>
               <div class="flex items-center">
                 <svg class="w-5 h-5 text-gray-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"/>
                 </svg>
-                <span class="text-gray-700">Keine Haustiere</span>
+                <span class="text-gray-700">{{ $t('accommodationDetail.rules.noPets') }}</span>
               </div>
             </div>
           </div>
@@ -203,7 +214,7 @@
               <div class="flex items-center justify-between mb-6">
                 <div>
                   <span class="text-3xl font-bold text-gray-900">€{{ accommodation.price }}</span>
-                  <span class="text-gray-600 ml-1">pro Nacht</span>
+                  <span class="text-gray-600 ml-1">{{ $t('accommodations.perNight') }}</span>
                 </div>
                 <div class="flex items-center">
                   <svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -214,62 +225,58 @@
               </div>
 
               <!-- Date Selection -->
-              <div class="border border-gray-300 rounded-xl mb-4">
-                <div class="grid grid-cols-2">
-                  <div class="p-3 border-r border-gray-300">
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">CHECK-IN</label>
-                    <input 
-                      type="date" 
-                      v-model="checkInDate"
-                      :min="minDate"
-                      class="w-full text-sm border-none focus:outline-none"
-                    />
-                  </div>
-                  <div class="p-3">
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">CHECK-OUT</label>
-                    <input 
-                      type="date" 
-                      v-model="checkOutDate"
-                      :min="minCheckOutDate"
-                      class="w-full text-sm border-none focus:outline-none"
-                    />
-                  </div>
-                </div>
-                <div class="p-3 border-t border-gray-300">
-                  <label class="block text-xs font-semibold text-gray-700 mb-1">GÄSTE</label>
-                  <select v-model="guests" class="w-full text-sm border-none focus:outline-none">
-                    <option v-for="n in accommodation.capacity" :key="n" :value="n">
-                      {{ n }} {{ n === 1 ? 'Gast' : 'Gäste' }}
-                    </option>
-                  </select>
-                </div>
+              <div class="mb-4">
+                <DateRangePicker 
+                  :availabilityMap="availabilityMap"
+                  :locale="'de-DE'"
+                  :minDate="minDatePlusOne"
+                  v-model="dateRange"
+                  @rangeSelected="onRangeSelected"
+                  :labels="{checkin: $t('booking.form.checkin'), checkout: $t('booking.form.checkout'), available: $t('booking.calendar.available'), booked: $t('booking.calendar.booked'), selected: 'Ausgewählt', cancel: $t('common.cancel') || 'Abbrechen', apply: 'Übernehmen'}"
+                />
+              </div>
+              <div class="border border-gray-300 rounded-xl mb-4 p-3">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">{{ $t('accommodationDetail.guests') }}</label>
+                <select v-model="guests" class="w-full text-sm border-none focus:outline-none">
+                  <option v-for="n in accommodation.capacity" :key="n" :value="n">
+                    {{ n }} {{ n === 1 ? $t('common.guest') : $t('common.guests') }}
+                  </option>
+                </select>
               </div>
 
               <!-- Book Button -->
               <button 
                 @click="bookNow"
-                :disabled="!checkInDate || !checkOutDate"
+                :disabled="!checkInDate || !checkOutDate || nights <= 0"
                 class="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white py-4 rounded-xl font-semibold text-lg hover:from-pink-600 hover:to-red-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
               >
-                Reservieren
+                {{ $t('accommodations.book') }}
+              </button>
+
+              <button 
+                type="button"
+                @click="openInquiry"
+                class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 mb-2"
+              >
+                Verfügbarkeit anfragen
               </button>
 
               <p class="text-center text-sm text-gray-600 mb-4">
-                Sie werden noch nicht belastet
+                {{ $t('accommodationDetail.notChargedYet') }}
               </p>
 
               <!-- Price Breakdown -->
               <div v-if="checkInDate && checkOutDate" class="space-y-3 pt-4 border-t border-gray-200">
                 <div class="flex justify-between">
-                  <span class="text-gray-700">€{{ accommodation.price }} x {{ nights }} Nächte</span>
+                  <span class="text-gray-700">€{{ accommodation.price }} x {{ nights }} {{ $t('booking.summary.nights') }}</span>
                   <span class="text-gray-900">€{{ totalPrice }}</span>
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-gray-700">Reinigungsgebühr</span>
+                  <span class="text-gray-700">{{ $t('accommodationDetail.cleaningFee') }}</span>
                   <span class="text-gray-900">€25</span>
                 </div>
                 <div class="flex justify-between pt-3 border-t border-gray-200 font-semibold">
-                  <span class="text-gray-900">Gesamt</span>
+                  <span class="text-gray-900">{{ $t('accommodationDetail.total') }}</span>
                   <span class="text-gray-900">€{{ totalPrice + 25 }}</span>
                 </div>
               </div>
@@ -284,8 +291,8 @@
                   </svg>
                 </div>
                 <div>
-                  <h4 class="font-semibold text-gray-900">Fragen?</h4>
-                  <p class="text-sm text-gray-600">Kontaktieren Sie uns direkt</p>
+                  <h4 class="font-semibold text-gray-900">{{ $t('accommodationDetail.questions') }}</h4>
+                  <p class="text-sm text-gray-600">{{ $t('accommodationDetail.contactUsDirect') }}</p>
                 </div>
               </div>
               <a 
@@ -300,15 +307,113 @@
       </div>
     </div>
   </div>
+  <div v-if="showInquiry" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Verfügbarkeit anfragen" @click.self="closeInquiry">
+    <div class="mx-auto bg-white rounded-2xl shadow-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto mt-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-gray-900">Verfügbarkeit anfragen</h2>
+        <button class="px-3 py-1 rounded hover:bg-gray-100" @click="closeInquiry">Schließen</button>
+      </div>
+      <div class="space-y-6">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">Reisedaten</h3>
+          <DateRangePicker 
+            :availabilityMap="availabilityMap"
+            :locale="'de-DE'"
+            :minDate="minDatePlusOne"
+            v-model="dateRange"
+            @rangeSelected="onRangeSelected"
+            :labels="{checkin: $t('booking.form.checkin'), checkout: $t('booking.form.checkout'), available: $t('booking.calendar.available'), booked: $t('booking.calendar.booked'), selected: 'Ausgewählt', cancel: $t('common.cancel') || 'Abbrechen', apply: 'Übernehmen'}"
+          />
+          <div class="mt-3 grid grid-cols-2 gap-4">
+            <div class="border border-gray-300 rounded-xl p-3">
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Erwachsene</label>
+              <div class="flex items-center justify-between">
+                <button class="px-3 py-2 rounded bg-gray-100" @click="decAdults">-</button>
+                <div class="text-lg font-semibold">{{ inquiryAdults }}</div>
+                <button class="px-3 py-2 rounded bg-gray-100" @click="incAdults">+</button>
+              </div>
+            </div>
+            <div class="border border-gray-300 rounded-xl p-3">
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Kinder</label>
+              <div class="flex items-center justify-between">
+                <button class="px-3 py-2 rounded bg-gray-100" @click="decKids">-</button>
+                <div class="text-lg font-semibold">{{ inquiryKids }}</div>
+                <button class="px-3 py-2 rounded bg-gray-100" @click="incKids">+</button>
+              </div>
+            </div>
+          </div>
+          <div v-if="inquiryNights > 0" class="mt-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200 flex items-center justify-between">
+            <div class="text-blue-700 font-semibold">{{ inquiryNights }} {{ inquiryNights === 1 ? 'Nacht' : 'Nächte' }}</div>
+            <div class="text-2xl font-bold text-blue-600">€{{ inquiryTotalPrice }}</div>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">Deine Daten</h3>
+          <div class="grid md:grid-cols-2 gap-4">
+            <input type="text" v-model="inquiry.firstName" placeholder="Vorname" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 bg-white" />
+            <input type="text" v-model="inquiry.lastName" placeholder="Nachname" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 bg-white" />
+            <input type="email" v-model="inquiry.email" placeholder="E-Mail" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 bg-white" />
+            <input type="tel" v-model="inquiry.phone" placeholder="Telefon (optional)" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 bg-white" />
+          </div>
+          <textarea rows="3" v-model="inquiry.message" placeholder="Haben Sie besondere Wünsche oder Anforderungen?" class="mt-3 w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 bg-white"></textarea>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">Zusammenfassung</h3>
+          <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-1">
+            <div class="font-semibold">Unterkunft: {{ accommodation.name }}</div>
+            <div>Datum: {{ new Date(dateRange.checkin).toLocaleDateString('de-DE') }} – {{ new Date(dateRange.checkout).toLocaleDateString('de-DE') }} · {{ inquiryNights }} {{ inquiryNights === 1 ? 'Nacht' : 'Nächte' }}</div>
+            <div>Gäste: {{ inquiryAdults }} Erwachsene, {{ inquiryKids }} Kinder</div>
+            <div class="font-semibold">Preis: €{{ inquiryTotalPrice }}</div>
+            <label class="mt-2 inline-flex items-center">
+              <input type="checkbox" v-model="inquiryAcceptedPrivacy" class="mr-2">
+              <span>Ich akzeptiere die DSGVO-Bedingungen</span>
+            </label>
+          </div>
+        </div>
+        <div>
+          <button 
+            :disabled="!inquiryFormValid || inquirySubmitting"
+            @click="submitInquiry"
+            class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Kostenlos & unverbindlich anfragen
+          </button>
+          <div v-if="inquiryError" class="mt-2 text-red-600 text-sm">{{ inquiryError }}</div>
+        </div>
+        <div v-if="inquirySuccess" class="mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl">
+          <div class="font-semibold">Vielen Dank! Wir melden uns innerhalb von 24 h bei Ihnen.</div>
+          <div class="mt-3 grid grid-cols-2 gap-3">
+            <router-link to="/unterkuenfte" class="text-center px-3 py-2 rounded bg-green-600 text-white hover:bg-green-700">Weitere Unterkünfte ansehen</router-link>
+            <button class="px-3 py-2 rounded bg-gray-100 hover:bg-gray-200" @click="closeInquiry">Zurück zur Unterkunft</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="md:hidden fixed bottom-4 left-0 right-0 px-4 z-40">
+    <button @click="openInquiry" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-xl font-semibold text-lg shadow-lg">Verfügbarkeit anfragen</button>
+  </div>
 </template>
+
+<Lightbox :show="showLightbox" :images="imagesAll" :startIndex="lightboxIndex" @close="closeLightbox"/>
 
 <script>
 import InteractiveMap from './InteractiveMap.vue'
+import DateRangePicker from './DateRangePicker.vue'
+import Lightbox from './Lightbox.vue'
+import { accommodationService } from '../services/api.js'
+import { useEmailService } from '../composables/useEmailService.js'
 
 export default {
   name: 'AccommodationDetail',
   components: {
-    InteractiveMap
+    InteractiveMap,
+    DateRangePicker,
+    Lightbox
+  },
+  setup() {
+    const emailService = useEmailService()
+    return { emailService }
   },
   data() {
     return {
@@ -317,119 +422,32 @@ export default {
       checkInDate: '',
       checkOutDate: '',
       guests: 1,
-      additionalImages: [
-        'https://images.pexels.com/photos/271618/pexels-photo-271618.jpeg?auto=compress&cs=tinysrgb&w=600',
-        'https://images.pexels.com/photos/271643/pexels-photo-271643.jpeg?auto=compress&cs=tinysrgb&w=600',
-        'https://images.pexels.com/photos/271795/pexels-photo-271795.jpeg?auto=compress&cs=tinysrgb&w=600',
-        'https://images.pexels.com/photos/271616/pexels-photo-271616.jpeg?auto=compress&cs=tinysrgb&w=600'
-      ],
-      accommodations: [
-        {
-          id: 1,
-          name: 'Moderne Monteurwohnung Zentrum',
-          description: 'Helle und moderne 2-Zimmer-Wohnung im Herzen von Leipzig mit voll ausgestatteter Küche und Arbeitsbereich',
-          price: 89,
-          capacity: 4,
-          location: 'Zentrum',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'tv'],
-          image: 'https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 2,
-          name: 'Komfort-Appartement West',
-          description: 'Geräumiges Appartement mit separatem Arbeitsbereich und Waschmaschine',
-          price: 75,
-          capacity: 3,
-          location: 'West',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'laundry'],
-          image: 'https://images.pexels.com/photos/271618/pexels-photo-271618.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 3,
-          name: 'Wohnheim für Bauteams',
-          description: 'Praktische Lösung für größere Montageteams mit mehreren Schlafzimmern',
-          price: 65,
-          capacity: 6,
-          location: 'Nord',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'laundry', 'tv'],
-          image: 'https://images.pexels.com/photos/271643/pexels-photo-271643.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 4,
-          name: 'Business Apartment Süd',
-          description: 'Modernes Apartment mit Bürobereich und schnellem Internet',
-          price: 95,
-          capacity: 2,
-          location: 'Süd',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'tv'],
-          image: 'https://images.pexels.com/photos/271795/pexels-photo-271795.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 5,
-          name: 'Teamunterkunft Ost',
-          description: 'Großzügige Unterkunft für Montageteams mit Gemeinschaftsküche',
-          price: 55,
-          capacity: 8,
-          location: 'Ost',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'laundry'],
-          image: 'https://images.pexels.com/photos/271616/pexels-photo-271616.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 6,
-          name: 'Premium Suite Zentrum',
-          description: 'Luxuriöse Suite mit separatem Wohn- und Schlafbereich',
-          price: 120,
-          capacity: 2,
-          location: 'Zentrum',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'tv', 'laundry'],
-          image: 'https://images.pexels.com/photos/271619/pexels-photo-271619.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 7,
-          name: 'Familienwohnung Plagwitz',
-          description: 'Geräumige 3-Zimmer-Wohnung in beliebtem Stadtteil mit Balkon und Waschmaschine',
-          price: 85,
-          capacity: 5,
-          location: 'Plagwitz',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'tv', 'laundry', 'balcony'],
-          image: 'https://images.pexels.com/photos/271639/pexels-photo-271639.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 8,
-          name: 'Studio Apartment Connewitz',
-          description: 'Modernes Studio-Apartment für Einzelpersonen mit kompakter Ausstattung',
-          price: 45,
-          capacity: 1,
-          location: 'Connewitz',
-          features: ['wifi', 'kitchen', 'bathroom', 'tv'],
-          image: 'https://images.pexels.com/photos/271647/pexels-photo-271647.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 9,
-          name: 'Monteur-WG Gohlis',
-          description: 'Wohngemeinschaft für 4 Personen mit Einzelzimmern und Gemeinschaftsküche',
-          price: 60,
-          capacity: 4,
-          location: 'Gohlis',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'laundry'],
-          image: 'https://images.pexels.com/photos/271650/pexels-photo-271650.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 10,
-          name: 'Executive Suite Reudnitz',
-          description: 'Hochwertige Suite mit separatem Arbeitsbereich und Premium-Ausstattung',
-          price: 110,
-          capacity: 2,
-          location: 'Reudnitz',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'tv', 'laundry', 'balcony'],
-          image: 'https://images.pexels.com/photos/271652/pexels-photo-271652.jpeg?auto=compress&cs=tinysrgb&w=600'
-        }
-      ]
+      additionalImages: [],
+      availabilityMap: {},
+      dateRange: { checkin: '', checkout: '' },
+      errorMsg: '',
+      showLightbox: false,
+      lightboxIndex: 0
+      ,
+      rangeObserver: null,
+      showInquiry: false,
+      inquiry: { firstName: '', lastName: '', email: '', phone: '', message: '' },
+      inquiryAdults: 2,
+      inquiryKids: 0,
+      inquiryAcceptedPrivacy: false,
+      inquirySubmitting: false,
+      inquiryError: '',
+      inquirySuccess: false
     }
   },
   computed: {
     minDate() {
       return new Date().toISOString().split('T')[0]
+    },
+    minDatePlusOne() {
+      const d = new Date()
+      d.setDate(d.getDate() + 1)
+      return d.toISOString().split('T')[0]
     },
     minCheckOutDate() {
       if (!this.checkInDate) return this.minDate
@@ -441,46 +459,150 @@ export default {
       if (!this.checkInDate || !this.checkOutDate) return 0
       const checkIn = new Date(this.checkInDate)
       const checkOut = new Date(this.checkOutDate)
-      const diffTime = Math.abs(checkOut - checkIn)
+      const diffTime = checkOut.getTime() - checkIn.getTime()
+      if (diffTime <= 0) return 0
       return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
     },
     totalPrice() {
       return this.nights * (this.accommodation?.price || 0)
+    },
+    imagesAll() {
+      const first = this.accommodation?.image ? [this.accommodation.image] : []
+      return [...first, ...(this.additionalImages || [])]
+    },
+    inquiryNights() {
+      try {
+        if (!this.dateRange.checkin || !this.dateRange.checkout) return 0
+        const ci = new Date(this.dateRange.checkin)
+        const co = new Date(this.dateRange.checkout)
+        const diff = co.getTime() - ci.getTime()
+        if (diff <= 0) return 0
+        return Math.ceil(diff / (1000 * 60 * 60 * 24))
+      } catch { return 0 }
+    },
+    inquiryTotalPrice() {
+      const p = this.accommodation?.price || 0
+      return this.inquiryNights > 0 ? p * this.inquiryNights : 0
+    },
+    inquiryGuestsTotal() {
+      return (this.inquiryAdults || 0) + (this.inquiryKids || 0)
+    },
+    inquiryFormValid() {
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.inquiry.email)
+      const namesOk = !!this.inquiry.firstName && !!this.inquiry.lastName
+      const datesOk = !!this.dateRange.checkin && !!this.dateRange.checkout && this.inquiryNights > 0 && this.inquiryNights <= 30
+      const privacyOk = !!this.inquiryAcceptedPrivacy
+      return emailOk && namesOk && datesOk && privacyOk && this.inquiryGuestsTotal > 0
     }
   },
   mounted() {
     this.loadAccommodation()
+    this.$nextTick(() => {
+      this.attachRangeObserver()
+      this.syncDatesFromSummary()
+    })
   },
   watch: {
     '$route'() {
       this.loadAccommodation()
+    },
+    dateRange: {
+      deep: true,
+      handler(v) {
+        const ci = this.normalizeDateStr(v?.checkin || '')
+        const co = this.normalizeDateStr(v?.checkout || '')
+        if (ci) this.checkInDate = ci
+        if (co) this.checkOutDate = co
+      }
+    },
+    checkInDate(newVal) {
+      if (!newVal) return
+      const min = this.minDate
+      const nv = this.normalizeDateStr(newVal)
+      if (nv < min) {
+        this.checkInDate = min
+      }
+      if (this.checkOutDate) {
+        const minOut = this.minCheckOutDate
+        const co = this.normalizeDateStr(this.checkOutDate)
+        if (co < minOut) {
+          this.checkOutDate = minOut
+        }
+      }
+    },
+    checkOutDate(newVal) {
+      if (!newVal) return
+      const minOut = this.minCheckOutDate
+      const nv = this.normalizeDateStr(newVal)
+      if (nv < minOut) {
+        this.checkOutDate = minOut
+      }
     }
   },
+  beforeUnmount() {
+    try { this.rangeObserver && this.rangeObserver.disconnect() } catch {}
+  },
   methods: {
-    loadAccommodation() {
-      this.loading = true
-      const id = parseInt(this.$route.params.id)
-      
-      // Simulate API call
-      setTimeout(() => {
-        this.accommodation = this.accommodations.find(acc => acc.id === id)
-        this.loading = false
-        
-        if (this.accommodation) {
-          this.guests = 1
-          this.updateSEO()
+    openInquiry() {
+      this.inquiryError = ''
+      this.inquirySuccess = false
+      this.showInquiry = true
+      document.body.style.overflow = 'hidden'
+    },
+    closeInquiry() {
+      this.showInquiry = false
+      document.body.style.overflow = ''
+    },
+    async loadAccommodation() {
+      try {
+        this.loading = true
+        const raw = String(this.$route.params.id || '')
+        const id = parseInt(raw.replace(/[^0-9]/g, ''))
+        if (!Number.isInteger(id) || id <= 0) {
+          this.errorMsg = this.$t('common.notFound') + ` (Ungültige ID: "${raw}")`
+          this.accommodation = null
+          return
         }
-      }, 500)
+        const res = await accommodationService.getById(id)
+        const data = res.data
+        this.accommodation = data
+        this.additionalImages = (data.images || []).filter(u => u !== data.image)
+        this.guests = 1
+        this.updateSEO()
+        await this.loadAvailability()
+      } catch (e) {
+        const status = e?.status || e?.code || ''
+        const msg = e?.msg || e?.message || ''
+        this.errorMsg = `${this.$t('common.notFound')} ${status ? `(Status ${status})` : ''} ${msg ? `– ${msg}` : ''}`.trim()
+        this.accommodation = null
+      } finally {
+        this.loading = false
+      }
+    },
+    async loadAvailability() {
+      if (!this.accommodation?.id) return
+      try {
+        const today = new Date()
+        const startDate = today.toISOString().slice(0, 10)
+        const end = new Date(today)
+        end.setDate(end.getDate() + 60)
+        const endDate = end.toISOString().slice(0, 10)
+        const res = await accommodationService.checkAvailability(this.accommodation.id, startDate, endDate)
+        const days = res?.data?.availability || []
+        const map = {}
+        days.forEach(d => { map[d.date] = d.isAvailable })
+        this.availabilityMap = map
+      } catch (e) {
+        this.availabilityMap = {}
+      }
     },
     
     updateSEO() {
       if (this.accommodation) {
         document.title = `${this.accommodation.name} - DSK UG Monteurunterkünfte Leipzig`
-        
-        // Update meta description
         const metaDescription = document.querySelector('meta[name="description"]')
         if (metaDescription) {
-          metaDescription.setAttribute('content', this.accommodation.description)
+          metaDescription.setAttribute('content', (this.accommodation.about || this.accommodation.description || '').slice(0, 160))
         }
       }
     },
@@ -498,46 +620,137 @@ export default {
     },
     
     getAccommodationLocation(accommodation) {
-      const locations = {
-        'Leipzig Zentrum': [51.3397, 12.3731],
-        'Leipzig Süd': [51.3200, 12.3800],
-        'Leipzig Nord': [51.3600, 12.3700],
-        'Leipzig Ost': [51.3400, 12.4000],
-        'Leipzig West': [51.3400, 12.3400]
-      }
-      return locations[accommodation.location] || [51.3397, 12.3731]
+      const key = String(accommodation.location || '').toLowerCase()
+      if (!key) return [51.3397, 12.3731]
+      if (key.includes('zentrum')) return [51.3397, 12.3731]
+      if (key.includes('nord')) return [51.3600, 12.3700]
+      if (key.includes('süd') || key.includes('sued')) return [51.3200, 12.3800]
+      if (key.includes('ost')) return [51.3400, 12.4000]
+      if (key.includes('west')) return [51.3400, 12.3400]
+      if (key.includes('connewitz')) return [51.3090, 12.3690]
+      return [51.3397, 12.3731]
+    },
+    computeLocationKey(loc) {
+      const s = String(loc || '').trim().toLowerCase()
+      const mapUml = (x) => x
+        .replace(/ä/g, 'ae')
+        .replace(/ö/g, 'oe')
+        .replace(/ü/g, 'ue')
+        .replace(/ß/g, 'ss')
+      return mapUml(s)
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '-')
+        .replace(/--+/g, '-')
+        .replace(/^-|-$|/g, '')
     },
     
     getAccommodationMarker(accommodation) {
       const [lat, lng] = this.getAccommodationLocation(accommodation)
       return {
-        position: [lat, lng],
-        popup: `<strong>${accommodation.name}</strong><br>${accommodation.location}<br>${accommodation.price}€ ${this.$t('accommodations.perNight')}`,
+        lat,
+        lng,
+        popup: `<strong>${accommodation.name}</strong><br>${this.$t('locations.' + this.computeLocationKey(accommodation.location))}<br>${accommodation.price}€ ${this.$t('accommodations.perNight')}`,
         tooltip: accommodation.name
       }
     },
     
     openImageModal() {
-      // Implement image modal functionality
-      console.log('Open image modal')
+      this.openLightbox(0)
+    },
+    openLightbox(idx) {
+      this.lightboxIndex = idx
+      this.showLightbox = true
+    },
+    closeLightbox() { this.showLightbox = false },
+    onRangeSelected(range) {
+      this.checkInDate = this.normalizeDateStr(range.checkin)
+      this.checkOutDate = this.normalizeDateStr(range.checkout)
+    },
+    normalizeDateStr(val) {
+      if (!val) return ''
+      // Accept ISO (YYYY-MM-DD) as-is
+      if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val
+      // Convert common DE format DD.MM.YYYY to ISO
+      const m = val.match(/^([0-3]?\d)\.([0-1]?\d)\.(\d{4})$/)
+      if (m) {
+        const dd = m[1].padStart(2, '0')
+        const mm = m[2].padStart(2, '0')
+        const yyyy = m[3]
+        return `${yyyy}-${mm}-${dd}`
+      }
+      // Fallback: try Date parsing
+      const d = new Date(val)
+      if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10)
+      return ''
+    },
+    attachRangeObserver() {
+      try {
+        const obs = new MutationObserver(() => {
+          this.syncDatesFromSummary()
+        })
+        obs.observe(this.$el, { subtree: true, childList: true, attributes: true })
+        this.rangeObserver = obs
+      } catch {}
+    },
+    syncDatesFromSummary() {
+      try {
+        const el = this.$el.querySelector('[data-range-summary="true"]')
+        if (!el) return
+        const ci = this.normalizeDateStr(el.getAttribute('data-checkin') || '')
+        const co = this.normalizeDateStr(el.getAttribute('data-checkout') || '')
+        if (ci) this.checkInDate = ci
+        if (co) this.checkOutDate = co
+      } catch {}
     },
     
     bookNow() {
       if (!this.checkInDate || !this.checkOutDate) {
-        alert('Bitte wählen Sie Check-in und Check-out Daten aus.')
+        alert(this.$t('accommodationDetail.validation.selectDates'))
         return
       }
       
       // Navigate to booking page with pre-filled data
       this.$router.push({
-        path: `/buchung/${this.accommodation.id}`,
+        path: '/buchung',
         query: {
+          accommodationId: this.accommodation.id,
           checkIn: this.checkInDate,
           checkOut: this.checkOutDate,
           guests: this.guests
         }
       })
-    }
+    },
+    async submitInquiry() {
+      if (!this.inquiryFormValid || !this.accommodation) return
+      this.inquirySubmitting = true
+      this.emailService.resetState()
+      this.inquiryError = ''
+      try {
+        const payload = {
+          accommodationId: this.accommodation.id,
+          accommodationName: this.accommodation.name,
+          guestName: `${this.inquiry.firstName} ${this.inquiry.lastName}`.trim(),
+          guestEmail: this.inquiry.email,
+          guestPhone: this.inquiry.phone,
+          checkIn: this.dateRange.checkin,
+          checkOut: this.dateRange.checkout,
+          guests: this.inquiryGuestsTotal,
+          totalPrice: this.inquiryTotalPrice,
+          specialRequests: this.inquiry.message
+        }
+        const res = await this.emailService.sendBookingEmail(payload)
+        if (!res.success) throw new Error('Fehler beim Senden der Buchungsanfrage')
+        this.inquirySuccess = true
+      } catch (e) {
+        this.inquiryError = e?.message || 'Es ist ein Fehler aufgetreten.'
+      } finally {
+        this.inquirySubmitting = false
+      }
+    },
+    incAdults() { if (this.inquiryAdults < 10) this.inquiryAdults++ },
+    decAdults() { if (this.inquiryAdults > 1) this.inquiryAdults-- },
+    incKids() { if (this.inquiryKids < 10) this.inquiryKids++ },
+    decKids() { if (this.inquiryKids > 0) this.inquiryKids-- }
   }
 }
 </script>
@@ -679,3 +892,24 @@ button:focus {
   cursor: not-allowed;
 }
 </style>
+    async loadAvailability() {
+      if (!this.accommodation?.id) return
+      try {
+        const today = new Date()
+        const startDate = today.toISOString().slice(0, 10)
+        const end = new Date(today)
+        end.setDate(end.getDate() + 60)
+        const endDate = end.toISOString().slice(0, 10)
+        const res = await accommodationService.checkAvailability(this.accommodation.id, startDate, endDate)
+        const days = res?.data?.availability || []
+        const map = {}
+        days.forEach(d => { map[d.date] = d.isAvailable })
+        this.availabilityMap = map
+      } catch (e) {
+        this.availabilityMap = {}
+      }
+    },
+    onRangeSelected(range) {
+      this.checkInDate = range.checkin
+      this.checkOutDate = range.checkout
+    },

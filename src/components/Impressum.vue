@@ -15,13 +15,13 @@
             <div class="bg-gray-50 p-6 rounded-lg">
               <p class="mb-2"><strong>{{ $t('legal.impressum.company.name') }}:</strong> DSK UG Monteurunterkünfte Leipzig</p>
               <p class="mb-2"><strong>{{ $t('legal.impressum.company.address') }}:</strong></p>
-              <p class="ml-4 mb-2">Musterstraße 123</p>
-              <p class="ml-4 mb-2">04109 Leipzig</p>
+              <p class="ml-4 mb-2">Engertstraße 6a</p>
+              <p class="ml-4 mb-2">04177 Leipzig</p>
               <p class="ml-4 mb-4">Deutschland</p>
               
-              <p class="mb-2"><strong>{{ $t('legal.impressum.company.phone') }}:</strong> +49 151 71421923</p>
-              <p class="mb-2"><strong>{{ $t('legal.impressum.company.email') }}:</strong> info@dsk-ug-leipzig.de</p>
-              <p class="mb-2"><strong>{{ $t('legal.impressum.company.website') }}:</strong> www.dsk-ug-leipzig.de</p>
+              <p class="mb-2"><strong>Telefon:</strong> +49 151 71421923</p>
+              <p class="mb-2"><strong>E-Mail:</strong> <strong>info@dsk-ug.de</strong></p>
+              <p class="mb-2"><strong>Website:</strong> <strong>www.dsk-ug.de</strong></p>
             </div>
           </section>
 
@@ -32,8 +32,7 @@
             </h2>
             <div class="bg-gray-50 p-6 rounded-lg">
               <p class="mb-2"><strong>{{ $t('legal.impressum.representatives.managing') }}:</strong> Petra Scheffler</p>
-              <p class="mb-2"><strong>{{ $t('legal.impressum.representatives.owner') }}:</strong> Erol Karaca</p>
-              <p class="mb-2"><strong>{{ $t('legal.impressum.representatives.contact') }}:</strong> geschaeftsleitung@dsk-ug-leipzig.de</p>
+              <p class="mb-2"><strong>{{ $t('legal.impressum.representatives.contact') }}:</strong> info@dsk-ug.de</p>
             </div>
           </section>
 
@@ -44,8 +43,8 @@
             </h2>
             <div class="bg-gray-50 p-6 rounded-lg">
               <p class="mb-2"><strong>{{ $t('legal.impressum.registration.court') }}:</strong> Amtsgericht Leipzig</p>
-              <p class="mb-2"><strong>{{ $t('legal.impressum.registration.number') }}:</strong> HRB 12345</p>
-              <p class="mb-2"><strong>{{ $t('legal.impressum.registration.tax') }}:</strong> DE123456789</p>
+              <p class="mb-2"><strong>{{ $t('legal.impressum.registration.number') }}:</strong> HRB 36406</p>
+              <p class="mb-2"><strong>{{ $t('legal.impressum.registration.vatId') }}:</strong> DE324735122</p>
             </div>
           </section>
 
@@ -86,7 +85,7 @@
                 {{ $t('legal.impressum.dispute.content') }}
               </p>
               <p class="text-gray-700 leading-relaxed">
-                <strong>{{ $t('legal.impressum.dispute.platform') }}:</strong> 
+                <strong>OS-Plattform:</strong>
                 <a href="https://ec.europa.eu/consumers/odr/" target="_blank" class="text-blue-600 hover:text-blue-800 underline">
                   https://ec.europa.eu/consumers/odr/
                 </a>
@@ -101,7 +100,7 @@
             @click="$router.go(-1)"
             class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors btn-ripple hover-lift"
           >
-            {{ $t('legal.back') }}
+            {{ $t('legal.impressum.backButton') }}
           </button>
         </div>
       </div>

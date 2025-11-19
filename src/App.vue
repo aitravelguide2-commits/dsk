@@ -4,19 +4,24 @@
     <main>
       <router-view />
     </main>
-    <Footer />
+    <div id="site-footer">
+      <Footer />
+    </div>
+    <CookieBanner />
   </div>
 </template>
 
 <script>
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
+import CookieBanner from './components/CookieBanner.vue'
 
 export default {
   name: 'App',
   components: {
     Header,
-    Footer
+    Footer,
+    CookieBanner
   }
 }
 </script>

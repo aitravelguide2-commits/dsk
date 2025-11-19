@@ -13,7 +13,7 @@
 
       <div class="grid lg:grid-cols-2 gap-8">
         <!-- Booking Form -->
-        <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
+        <div class="bg-white/80 rounded-2xl shadow-xl border border-white/20 p-8">
           <div class="flex items-center mb-6">
             <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center mr-4">
               <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -21,6 +21,41 @@
               </svg>
             </div>
             <h2 class="text-2xl font-bold text-gray-800">Buchungsformular</h2>
+          </div>
+
+          <div v-if="changeModeOpen" id="change-accommodation-panel" class="mb-6 border border-gray-200 rounded-2xl p-4" role="region" aria-label="Unterkunft ändern">
+            <label for="change-accommodation-select" class="block text-sm font-semibold text-gray-700 mb-2">Neue Unterkunft auswählen</label>
+            <select 
+              id="change-accommodation-select"
+              v-model="selectionPendingId"
+              class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 bg-white"
+            >
+              <option value="">Bitte wählen...</option>
+              <option 
+                v-for="acc in accommodations" 
+                :key="acc.id" 
+                :value="acc.id"
+              >
+                {{ acc.name }} - €{{ acc.price }}/Nacht - {{ acc.location }}
+              </option>
+            </select>
+            <div class="mt-3 flex items-center gap-2">
+              <button type="button" @click="applySelection" :disabled="!selectionPendingId || changeLoading" class="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">Änderung übernehmen</button>
+              <button type="button" @click="cancelChangeMode" class="px-4 py-2 rounded-xl bg-gray-100 text-gray-800 hover:bg-gray-200">Abbrechen</button>
+            </div>
+            <div class="mt-2 text-sm" aria-live="polite">
+              <span v-if="changeFeedback" class="text-green-700">{{ changeFeedback }}</span>
+              <span v-else-if="changeError" class="text-red-700">{{ changeError }}</span>
+            </div>
+          </div>
+
+          <div v-if="accommodationId" class="flex items-center justify-between mb-4">
+            <div class="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
+              Direktbuchung: {{ selectedAccommodation?.name }}
+            </div>
+            <button type="button" @click="openChangeMode" class="text-sm font-semibold text-blue-600 hover:text-blue-700" aria-controls="change-accommodation-panel" :aria-expanded="changeModeOpen ? 'true' : 'false'">
+              Unterkunft ändern
+            </button>
           </div>
 
           <form @submit.prevent="submitBooking" class="space-y-6">
@@ -57,50 +92,16 @@
                 Aufenthaltsdauer
               </h3>
               
-              <div class="grid md:grid-cols-2 gap-4">
-                <div class="relative">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    {{ $t('booking.form.checkin') }}
-                  </label>
-                  <div class="relative">
-                    <input 
-                      type="date" 
-                      v-model="bookingData.checkin"
-                      @change="calculatePrice"
-                      :min="minDate"
-                      class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 pl-12 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 bg-white"
-                      required
-                    >
-                    <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                  </div>
-                  <div v-if="bookingData.checkin && !isDateAvailable(bookingData.checkin)" class="mt-1 text-sm text-red-600 flex items-center">
-                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                    </svg>
-                    Datum nicht verfügbar
-                  </div>
-                </div>
-                <div class="relative">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    {{ $t('booking.form.checkout') }}
-                  </label>
-                  <div class="relative">
-                    <input 
-                      type="date" 
-                      v-model="bookingData.checkout"
-                      @change="calculatePrice"
-                      :min="minCheckoutDate"
-                      class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 pl-12 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 bg-white"
-                      required
-                    >
-                    <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                  </div>
-                </div>
-              </div>
+              <DateRangePicker 
+                :availabilityMap="availabilityMap"
+                :locale="locale"
+                :minDate="minDate"
+                :minNights="selectedAccommodation?.minStay || 1"
+                v-model="dateRange"
+                @rangeSelected="onRangeSelected"
+                :labels="{checkin: $t('booking.form.checkin'), checkout: $t('booking.form.checkout'), available: $t('booking.calendar.available'), booked: $t('booking.calendar.booked'), selected: 'Ausgewählt', cancel: 'Abbrechen', apply: 'Übernehmen'}"
+              />
+
 
               <!-- Date Range Display -->
               <div v-if="bookingData.checkin && bookingData.checkout && nights > 0" class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
@@ -112,11 +113,25 @@
                     <span class="font-semibold">{{ nights }} {{ nights === 1 ? 'Nacht' : 'Nächte' }}</span>
                   </div>
                   <div class="text-right">
-                    <div class="text-2xl font-bold text-blue-600">€{{ totalPrice }}</div>
-                    <div class="text-sm text-gray-600">Gesamtpreis</div>
+                  <div class="text-2xl font-bold text-blue-600">
+                    <span v-if="!priceLoading">€{{ totalPrice }}</span>
+                    <span v-else class="inline-flex items-center">
+                      <svg class="animate-spin -ml-1 mr-1 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      wird berechnet...
+                    </span>
                   </div>
+                  <div class="text-sm text-gray-600">Gesamtpreis</div>
                 </div>
               </div>
+              <div v-if="priceData" class="mt-2 text-sm text-gray-700">
+                <div>Grundpreis: €{{ Math.round(priceData.basePrice) }}</div>
+                <div v-if="priceData.cleaningFeeApplied">Reinigungsgebühr: €{{ Math.round(priceData.cleaningFee) }}</div>
+                <div class="font-semibold">Summe: €{{ Math.round(priceData.total) }}</div>
+              </div>
+            </div>
             </div>
 
             <!-- Personal Information -->
@@ -191,7 +206,7 @@
                   class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 bg-white"
                   required
                 >
-                  <option v-for="n in 8" :key="n" :value="n">{{ n }} {{ n === 1 ? 'Person' : 'Personen' }}</option>
+                  <option v-for="n in personsMax" :key="n" :value="n">{{ n }} {{ n === 1 ? 'Person' : 'Personen' }}</option>
                 </select>
               </div>
 
@@ -257,7 +272,7 @@
         <!-- Calendar & Accommodation Info -->
         <div class="space-y-6">
           <!-- Selected Accommodation Info -->
-          <div v-if="selectedAccommodation" class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+          <div v-if="selectedAccommodation" class="bg-white/80 rounded-2xl shadow-xl border border-white/20 p-6">
             <div class="flex items-center mb-4">
               <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mr-3">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -328,15 +343,18 @@
                 <InteractiveMap
                   :center="getAccommodationLocation(selectedAccommodation)"
                   :zoom="15"
-                  :height="200"
+                  :height="'200px'"
                   :markers="[getAccommodationMarker(selectedAccommodation)]"
+                  :address="selectedAccommodation.address"
+                  :showDirections="true"
+                  :showSurroundingsLink="true"
                 />
               </div>
             </div>
           </div>
 
           <!-- Enhanced Calendar Preview -->
-          <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+          <div class="bg-white/80 rounded-2xl shadow-XL border border-white/20 p-6">
             <div class="flex items-center mb-4">
               <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mr-3">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -346,18 +364,18 @@
               <h3 class="text-lg font-bold text-gray-800">Verfügbarkeitskalender</h3>
             </div>
             
-            <div class="grid grid-cols-7 gap-1 text-xs mb-4">
-              <div v-for="day in calendarDays" :key="day.date" 
-                   :class="[
-                     'p-3 text-center rounded-lg border transition-all duration-200 cursor-pointer hover:shadow-md',
-                     day.isAvailable ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-red-50 border-red-200 hover:bg-red-100',
-                     day.isToday ? 'ring-2 ring-blue-500 ring-opacity-50' : '',
-                     day.isSelected ? 'bg-blue-500 text-white border-blue-500' : ''
-                   ]">
-                <div class="font-semibold">{{ day.day }}</div>
-                <div :class="day.isSelected ? 'text-blue-100' : 'text-gray-500'">{{ day.date }}</div>
+              <div class="grid grid-cols-7 gap-1 text-xs mb-4">
+                <div v-for="day in calendarDays" :key="day.date" 
+                       :class="[
+                         'p-3 text-center rounded-lg border transition-all duration-200 cursor-pointer hover:shadow-md',
+                         day.isAvailable ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-red-50 border-red-200 hover:bg-red-100',
+                         day.isToday ? 'ring-2 ring-blue-500 ring-opacity-50' : '',
+                         day.isSelected ? 'bg-blue-500 text-white border-blue-500' : ''
+                       ]">
+                  <div class="font-semibold">{{ day.day }}</div>
+                  <div :class="[day.isSelected ? 'text-blue-100' : 'text-gray-500', !day.isAvailable ? 'line-through' : '']">{{ day.date }}</div>
+                </div>
               </div>
-            </div>
             
             <div class="flex items-center justify-center space-x-6 text-xs">
               <div class="flex items-center">
@@ -376,7 +394,7 @@
           </div>
 
           <!-- Trust Elements -->
-          <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+          <div class="bg-white/80 rounded-2xl shadow-xl border border-white/20 p-6">
             <div class="flex items-center mb-4">
               <div class="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center mr-3">
                 <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -717,9 +735,13 @@
   animation: fadeInUp 0.6s ease-out;
 }
 
-/* Smooth scrolling */
+/* Smooth scrolling - verhindert beim Neuladen */
 html {
   scroll-behavior: smooth;
+}
+
+html:not(:target) {
+  scroll-behavior: auto;
 }
 
 /* Custom scrollbar */
@@ -747,11 +769,15 @@ import { useSEO, seoData } from '../composables/useSEO.js'
 import { useEmailService } from '../composables/useEmailService.js'
 import { useI18n } from 'vue-i18n'
 import InteractiveMap from './InteractiveMap.vue'
+import DateRangePicker from './DateRangePicker.vue'
+import { accommodationService } from '../services/api.js'
+import { toNumericId, isValidId, persistSelection, readPersistedSelection } from '../utils/selection.js'
 
 export default {
   name: 'Booking',
   components: {
-    InteractiveMap
+    InteractiveMap,
+    DateRangePicker
   },
   props: {
     id: String
@@ -769,16 +795,39 @@ export default {
   },
   mounted() {
     this.updateSEO()
+    this.loadAccommodations()
+    const pid = readPersistedSelection()
+    if (!this.id && pid) {
+      this.selectedAccommodationId = pid
+      this.accommodationId = pid
+    }
   },
   watch: {
     locale() {
       this.updateSEO()
+    }
+    ,
+    '$route.params.id'() {
+      this.loadAccommodations()
+    }
+    ,
+    '$route.query.accommodationId'() {
+      this.loadAccommodations()
+    }
+    ,
+    '$route.query.accomodationId'() {
+      this.loadAccommodations()
     }
   },
   data() {
     return {
       accommodationId: this.id,
       selectedAccommodationId: this.id || '',
+      selectionPendingId: '',
+      changeModeOpen: false,
+      changeFeedback: '',
+      changeError: '',
+      changeLoading: false,
       isSubmitting: false,
       bookingData: {
         name: '',
@@ -790,117 +839,20 @@ export default {
         checkout: '',
         notes: ''
       },
-      // Simulated availability data - in real app this would come from API
-      unavailableDates: [
-        '2024-01-15', '2024-01-16', '2024-01-20', '2024-01-25'
-      ],
-      accommodations: [
-        {
-          id: 1,
-          name: 'Moderne Monteurwohnung Zentrum',
-          description: 'Helle und moderne 2-Zimmer-Wohnung im Herzen von Leipzig mit hochwertiger Ausstattung und optimaler Verkehrsanbindung.',
-          price: 89,
-          capacity: 4,
-          location: 'Zentrum',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'tv'],
-          image: 'https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 2,
-          name: 'Komfort-Appartement West',
-          description: 'Geräumiges Appartement mit separatem Arbeitsbereich, ideal für längere Aufenthalte und Teams.',
-          price: 75,
-          capacity: 3,
-          location: 'West',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'laundry'],
-          image: 'https://images.pexels.com/photos/271618/pexels-photo-271618.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 3,
-          name: 'Wohnheim für Bauteams',
-          description: 'Praktische Lösung für größere Montageteams mit gemeinsamen Bereichen und individuellen Rückzugsmöglichkeiten.',
-          price: 65,
-          capacity: 6,
-          location: 'Nord',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'laundry', 'tv'],
-          image: 'https://images.pexels.com/photos/271643/pexels-photo-271643.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 4,
-          name: 'Business Apartment Süd',
-          description: 'Modernes Apartment mit Bürobereich und schnellem Internet für Geschäftsreisende.',
-          price: 95,
-          capacity: 2,
-          location: 'Süd',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'tv'],
-          image: 'https://images.pexels.com/photos/271795/pexels-photo-271795.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 5,
-          name: 'Teamunterkunft Ost',
-          description: 'Großzügige Unterkunft für Montageteams mit Gemeinschaftsküche und flexiblen Schlafmöglichkeiten.',
-          price: 55,
-          capacity: 8,
-          location: 'Ost',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'laundry'],
-          image: 'https://images.pexels.com/photos/271616/pexels-photo-271616.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 6,
-          name: 'Premium Suite Zentrum',
-          description: 'Luxuriöse Suite mit separatem Wohn- und Schlafbereich für anspruchsvolle Gäste.',
-          price: 120,
-          capacity: 2,
-          location: 'Zentrum',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'tv', 'laundry'],
-          image: 'https://images.pexels.com/photos/271619/pexels-photo-271619.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 7,
-          name: 'Familienwohnung Plagwitz',
-          description: 'Geräumige 3-Zimmer-Wohnung in beliebtem Stadtteil mit Balkon und Waschmaschine.',
-          price: 85,
-          capacity: 5,
-          location: 'Plagwitz',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'tv', 'laundry', 'balcony'],
-          image: 'https://images.pexels.com/photos/271639/pexels-photo-271639.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 8,
-          name: 'Studio Apartment Connewitz',
-          description: 'Modernes Studio-Apartment für Einzelpersonen mit kompakter aber vollständiger Ausstattung.',
-          price: 45,
-          capacity: 1,
-          location: 'Connewitz',
-          features: ['wifi', 'kitchen', 'bathroom', 'tv'],
-          image: 'https://images.pexels.com/photos/271647/pexels-photo-271647.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 9,
-          name: 'Monteur-WG Gohlis',
-          description: 'Wohngemeinschaft für 4 Personen mit Einzelzimmern und großer Gemeinschaftsküche.',
-          price: 60,
-          capacity: 4,
-          location: 'Gohlis',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'laundry'],
-          image: 'https://images.pexels.com/photos/271650/pexels-photo-271650.jpeg?auto=compress&cs=tinysrgb&w=600'
-        },
-        {
-          id: 10,
-          name: 'Executive Suite Reudnitz',
-          description: 'Hochwertige Suite mit separatem Arbeitsbereich und Premium-Ausstattung für Führungskräfte.',
-          price: 110,
-          capacity: 2,
-          location: 'Reudnitz',
-          features: ['wifi', 'kitchen', 'parking', 'bathroom', 'tv', 'laundry', 'balcony'],
-          image: 'https://images.pexels.com/photos/271652/pexels-photo-271652.jpeg?auto=compress&cs=tinysrgb&w=600'
-        }
-      ]
+      accommodations: [],
+      availabilityMap: {},
+      priceLoading: false,
+      priceError: '',
+      priceData: null,
+      dateRange: { checkin: '', checkout: '' }
     }
   },
   computed: {
     selectedAccommodation() {
       return this.accommodations.find(acc => acc.id === parseInt(this.selectedAccommodationId))
+    },
+    personsMax() {
+      return this.selectedAccommodation?.capacity || 8
     },
     nights() {
       if (!this.bookingData.checkin || !this.bookingData.checkout) return 0
@@ -910,6 +862,7 @@ export default {
       return Math.ceil(diff / (1000 * 3600 * 24))
     },
     totalPrice() {
+      if (this.priceData && this.priceData.total != null) return Math.round(this.priceData.total)
       if (!this.selectedAccommodation || this.nights <= 0) return 0
       return this.selectedAccommodation.price * this.nights
     },
@@ -937,17 +890,23 @@ export default {
     calendarDays() {
       const days = []
       const today = new Date()
-      const checkinDate = this.bookingData.checkin ? new Date(this.bookingData.checkin) : null
-      const checkoutDate = this.bookingData.checkout ? new Date(this.bookingData.checkout) : null
+      const checkinStr = this.bookingData.checkin || this.dateRange.checkin || ''
+      const checkoutStr = this.bookingData.checkout || this.dateRange.checkout || ''
       
       for (let i = 0; i < 14; i++) {
         const date = new Date(today)
         date.setDate(today.getDate() + i)
         const dateString = date.toISOString().split('T')[0]
         
-        const isSelected = (checkinDate && date.toDateString() === checkinDate.toDateString()) ||
-                          (checkoutDate && date.toDateString() === checkoutDate.toDateString()) ||
-                          (checkinDate && checkoutDate && date > checkinDate && date < checkoutDate)
+        // Check if this date is selected (checkin, checkout, or in between)
+        let isSelected = false
+        if (checkinStr && checkoutStr) {
+          isSelected = dateString >= checkinStr && dateString <= checkoutStr
+        } else if (checkinStr) {
+          isSelected = dateString === checkinStr
+        } else if (checkoutStr) {
+          isSelected = dateString === checkoutStr
+        }
         
         days.push({
           date: date.getDate(),
@@ -971,7 +930,118 @@ export default {
       })
     },
     isDateAvailable(dateString) {
-      return !this.unavailableDates.includes(dateString)
+      // If availability not loaded for this date, assume available
+      if (!this.availabilityMap || !(dateString in this.availabilityMap)) return true
+      return !!this.availabilityMap[dateString]
+    },
+    async loadAccommodations() {
+      try {
+        const q = this.$route?.query?.accommodationId
+        const qAlt = this.$route?.query?.accomodationId
+        const qVal = q ?? qAlt
+        const qpId = qVal ? parseInt(String(qVal).replace(/\D/g, '')) : null
+        const p = this.$route?.params?.id
+        const routeId = !qpId && p ? parseInt(String(p).replace(/\D/g, '')) : null
+        const effectiveId = qpId || routeId || null
+
+        if (effectiveId) {
+          const res = await accommodationService.getById(effectiveId)
+          const acc = res?.data || null
+          this.accommodations = acc ? [acc] : []
+          this.selectedAccommodationId = acc ? acc.id : ''
+          this.accommodationId = acc ? acc.id : ''
+          const qCheckIn = this.$route?.query?.checkIn
+          const qCheckOut = this.$route?.query?.checkOut
+          const qGuests = this.$route?.query?.guests
+          if (qCheckIn) {
+            this.bookingData.checkin = String(qCheckIn)
+            this.dateRange.checkin = String(qCheckIn)
+          }
+          if (qCheckOut) {
+            this.bookingData.checkout = String(qCheckOut)
+            this.dateRange.checkout = String(qCheckOut)
+          }
+          if (qGuests) {
+            const g = parseInt(String(qGuests).replace(/\D/g, ''))
+            if (!isNaN(g) && g > 0) this.bookingData.persons = g
+          }
+        } else {
+          const res = await accommodationService.getAll({ isActive: true })
+          this.accommodations = res?.data || []
+          if (!this.selectedAccommodationId && this.accommodations.length) {
+            this.selectedAccommodationId = this.accommodations[0].id
+          }
+          this.accommodationId = ''
+        }
+        await this.loadAvailability()
+      } catch (e) {
+        console.error('Fehler beim Laden der Unterkünfte:', e)
+      }
+    },
+    async ensureAllAccommodations() {
+      try {
+        if (!this.accommodations || this.accommodations.length <= 1) {
+          const res = await accommodationService.getAll({ isActive: true })
+          this.accommodations = res?.data || []
+        }
+      } catch (e) {
+        console.error('Fehler beim Laden aller Unterkünfte:', e)
+      }
+    },
+    openChangeMode() {
+      this.selectionPendingId = this.selectedAccommodationId || ''
+      this.changeModeOpen = true
+      this.changeFeedback = ''
+      this.changeError = ''
+      this.ensureAllAccommodations()
+    },
+    cancelChangeMode() {
+      this.changeModeOpen = false
+      this.changeFeedback = ''
+      this.changeError = ''
+    },
+    async applySelection() {
+      try {
+        if (!this.selectionPendingId) {
+          this.changeError = 'Bitte wählen Sie eine Unterkunft.'
+          return
+        }
+        this.changeLoading = true
+        const newId = toNumericId(this.selectionPendingId)
+        if (!isValidId(newId)) {
+          throw new Error('Ungültige Auswahl')
+        }
+        this.selectedAccommodationId = newId
+        this.accommodationId = newId
+        persistSelection(newId)
+        this.changeFeedback = 'Auswahl aktualisiert'
+        this.changeError = ''
+        await this.loadAvailability()
+        this.$router.push({ path: `/buchung/${newId}` })
+        this.changeModeOpen = false
+      } catch (e) {
+        this.changeError = e?.message || 'Änderung fehlgeschlagen'
+      } finally {
+        this.changeLoading = false
+      }
+    },
+    async loadAvailability() {
+      if (!this.selectedAccommodationId) return
+      try {
+        const today = new Date()
+        const startDate = today.toISOString().slice(0, 10)
+        const end = new Date(today)
+        end.setDate(end.getDate() + 60)
+        const endDate = end.toISOString().slice(0, 10)
+        const res = await accommodationService.checkAvailability(this.selectedAccommodationId, startDate, endDate)
+        const days = res?.data?.availability || []
+        const map = {}
+        days.forEach(d => { map[d.date] = d.isAvailable })
+        this.availabilityMap = map
+      } catch (e) {
+        console.error('Fehler beim Laden der Verfügbarkeit:', e)
+        this.availabilityMap = {}
+      }
     },
     getFeatureIcon(feature) {
       const icons = {
@@ -1011,9 +1081,36 @@ export default {
         // Could show a notification here
       }
     },
-    async submitBooking() {
+    onRangeSelected(range) {
+      this.bookingData.checkin = range.checkin
+      this.bookingData.checkout = range.checkout
+      this.calculatePrice()
+      this.loadPrice()
+    },
+    async loadPrice() {
+      this.priceError = ''
+      this.priceData = null
+      if (!this.selectedAccommodationId || !this.bookingData.checkin || !this.bookingData.checkout) return
+      try {
+        this.priceLoading = true
+        const res = await accommodationService.priceEstimate(
+          parseInt(this.selectedAccommodationId),
+          this.bookingData.checkin,
+          this.bookingData.checkout
+        )
+        this.priceData = res?.data || null
+      } catch (e) {
+        this.priceError = e?.msg || 'Preisberechnung fehlgeschlagen'
+      } finally { this.priceLoading = false }
+    },
+      async submitBooking() {
       if (!this.isFormValid) return
       
+      if (!this.selectedAccommodation) {
+        this.emailService.error.value = 'Bitte wählen Sie eine Unterkunft aus.'
+        return
+      }
+
       this.isSubmitting = true
       this.emailService.resetState()
       
@@ -1021,22 +1118,28 @@ export default {
         // Create booking data for email service
         const bookingEmailData = {
           accommodationId: this.selectedAccommodation.id,
-          accommodationName: this.selectedAccommodation.name,
+          accommodationName: this.selectedAccommodation.name || 'Unbekannte Unterkunft',
           guestName: this.bookingData.name,
           guestEmail: this.bookingData.email,
           guestPhone: this.bookingData.phone,
           checkIn: this.bookingData.checkin,
           checkOut: this.bookingData.checkout,
-          guests: this.bookingData.persons,
+          guests: Number(this.bookingData.persons),
           totalPrice: this.totalPrice,
-          specialRequests: this.bookingData.notes
+          specialRequests: this.bookingData.notes || ''
         }
+
+        // Validate payload before sending
+        if (!bookingEmailData.accommodationId) throw new Error('Unterkunft ID fehlt')
+        if (!bookingEmailData.checkIn || !bookingEmailData.checkOut) throw new Error('Reisezeitraum fehlt')
+        if (isNaN(bookingEmailData.guests) || bookingEmailData.guests < 1) throw new Error('Ungültige Personenanzahl')
         
         // Send booking email via Supabase
+        console.log('Sending booking data:', bookingEmailData)
         const result = await this.emailService.sendBookingEmail(bookingEmailData)
         
         if (!result.success) {
-          throw new Error('Fehler beim Senden der Buchungsanfrage')
+          throw new Error(result.error || 'Fehler beim Senden der Buchungsanfrage')
         }
         
         // Create booking summary
@@ -1177,6 +1280,15 @@ www.dsk-ug-leipzig.de
   watch: {
     selectedAccommodationId(newVal) {
       this.accommodationId = newVal
+      const num = toNumericId(newVal)
+      if (isValidId(num)) persistSelection(num)
+      // Reload availability for the newly selected accommodation
+      this.loadAvailability()
+      this.loadPrice()
+      // Clamp persons to capacity
+      if (this.bookingData.persons > this.personsMax) {
+        this.bookingData.persons = this.personsMax
+      }
     },
     'bookingData.checkin'(newVal) {
       if (newVal && !this.isDateAvailable(newVal)) {

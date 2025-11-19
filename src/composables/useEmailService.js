@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { supabase } from '../config/supabase.js'
+import api from '../services/api.js'
 
 export function useEmailService() {
   const isLoading = ref(false)
@@ -75,82 +75,16 @@ export function useEmailService() {
     success.value = false
 
     try {
-      // Insert booking request into Supabase
-      const { data, error: insertError } = await supabase
-        .from('booking_requests')
-        .insert([
-          {
-            accommodation_id: bookingData.accommodationId,
-            accommodation_name: bookingData.accommodationName,
-            guest_name: bookingData.guestName,
-            guest_email: bookingData.guestEmail,
-            guest_phone: bookingData.guestPhone || null,
-            check_in: bookingData.checkIn,
-            check_out: bookingData.checkOut,
-            guests: bookingData.guests,
-            total_price: bookingData.totalPrice,
-            special_requests: bookingData.specialRequests || null,
-            created_at: new Date().toISOString(),
-            status: 'pending'
-          }
-        ])
-
-      if (insertError) {
-        throw insertError
-      }
-
-      // Calculate nights
-      const checkInDate = new Date(bookingData.checkIn)
-      const checkOutDate = new Date(bookingData.checkOut)
-      const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24))
-
-      // Send booking confirmation email
-      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-booking-email', {
-        body: {
-          to: 'buchungen@dsk-ug-leipzig.de',
-          cc: bookingData.guestEmail,
-          subject: `Neue Buchungsanfrage: ${bookingData.accommodationName}`,
-          html: `
-            <h2>Neue Buchungsanfrage</h2>
-            <h3>Unterkunft</h3>
-            <p><strong>Name:</strong> ${bookingData.accommodationName}</p>
-            <p><strong>ID:</strong> ${bookingData.accommodationId}</p>
-            
-            <h3>Gast</h3>
-            <p><strong>Name:</strong> ${bookingData.guestName}</p>
-            <p><strong>E-Mail:</strong> ${bookingData.guestEmail}</p>
-            ${bookingData.guestPhone ? `<p><strong>Telefon:</strong> ${bookingData.guestPhone}</p>` : ''}
-            
-            <h3>Buchungsdetails</h3>
-            <p><strong>Check-in:</strong> ${new Date(bookingData.checkIn).toLocaleDateString('de-DE')}</p>
-            <p><strong>Check-out:</strong> ${new Date(bookingData.checkOut).toLocaleDateString('de-DE')}</p>
-            <p><strong>Nächte:</strong> ${nights}</p>
-            <p><strong>Gäste:</strong> ${bookingData.guests}</p>
-            <p><strong>Gesamtpreis:</strong> €${bookingData.totalPrice}</p>
-            
-            ${bookingData.specialRequests ? `
-            <h3>Besondere Wünsche</h3>
-            <p>${bookingData.specialRequests.replace(/\n/g, '<br>')}</p>
-            ` : ''}
-            
-            <hr>
-            <p><small>Diese Buchungsanfrage wurde über die DSK-UG Website eingereicht.</small></p>
-          `
-        }
-      })
-
-      if (emailError) {
-        console.warn('Email sending failed, but booking saved:', emailError)
-        // Don't throw error here - booking is saved even if email fails
-      }
+      // Trigger mail via backend (Microsoft Graph) which also saves to DB
+      await api.post('/mail/send-booking', bookingData)
 
       success.value = true
-      return { success: true, data }
+      return { success: true }
 
     } catch (err) {
-      error.value = err.message || 'Fehler beim Senden der Buchungsanfrage'
+      error.value = err.msg || err.message || 'Fehler beim Senden der Buchungsanfrage'
       console.error('Booking email error:', err)
-      return { success: false, error: err.message }
+      return { success: false, error: error.value }
     } finally {
       isLoading.value = false
     }

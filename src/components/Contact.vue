@@ -2,7 +2,7 @@
   <div class="min-h-screen py-8 bg-gray-50">
     <div class="container mx-auto px-4 max-w-4xl">
       <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-12">
-        {{ $t('contact.title') }}
+        {{ pageContent.contact_title || $t('contact.title') }}
       </h1>
 
       <div class="grid lg:grid-cols-2 gap-8">
@@ -127,7 +127,7 @@
                 </div>
                 <div>
                   <h4 class="font-semibold text-gray-800">Adresse</h4>
-                  <p class="text-gray-600">{{ $t('contact.info.address') }}</p>
+                  <p class="text-gray-600">{{ pageContent.contact_address || $t('contact.info.address') }}</p>
                 </div>
               </div>
 
@@ -139,7 +139,7 @@
                 </div>
                 <div>
                   <h4 class="font-semibold text-gray-800">Telefon</h4>
-                  <p class="text-gray-600">{{ $t('contact.info.phone') }}</p>
+                  <p class="text-gray-600">{{ pageContent.contact_phone || $t('contact.info.phone') }}</p>
                 </div>
               </div>
 
@@ -152,7 +152,9 @@
                 </div>
                 <div>
                   <h4 class="font-semibold text-gray-800">E-Mail</h4>
-                  <p class="text-gray-600">{{ $t('contact.info.email') }}</p>
+                  <p class="text-gray-600">
+                    <a :href="'mailto:' + (pageContent.contact_email || 'info@dsk-ug.de')" class="text-blue-600 hover:underline">{{ pageContent.contact_email || 'info@dsk-ug.de' }}</a>
+                  </p>
                 </div>
               </div>
 
@@ -191,6 +193,7 @@ import { useSEO, seoData } from '../composables/useSEO.js'
 import { useEmailService } from '../composables/useEmailService.js'
 import { useI18n } from 'vue-i18n'
 import InteractiveMap from './InteractiveMap.vue'
+import { contentService } from '../services/api.js'
 
 export default {
   name: 'Contact',
@@ -210,6 +213,7 @@ export default {
   },
   mounted() {
     this.updateSEO()
+    this.loadContent()
   },
   watch: {
     locale() {
@@ -218,6 +222,7 @@ export default {
   },
   data() {
     return {
+      pageContent: {},
       mapMarkers: [
         {
           lat: 51.3397,
@@ -242,6 +247,17 @@ export default {
     }
   },
   methods: {
+    async loadContent() {
+      try {
+        const data = await contentService.getPageContent('contact')
+        const entry = Array.isArray(data) ? data.find(d => d.section === 'main') : data
+        if (entry && entry.content) {
+          this.pageContent = entry.content
+        }
+      } catch (e) {
+        console.error('Failed to load page content', e)
+      }
+    },
     updateSEO() {
       const currentSeoData = seoData.contact[this.locale] || seoData.contact.de
       this.setPageSEO({
